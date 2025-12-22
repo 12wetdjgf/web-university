@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web大学 - 你的个人学习平台">
+    <title>Web大学</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <main class="home">
+        <!-- 中心欢迎区域 -->
+        <div class="home-center">
+            <span class="welcome-badge">✨ 欢迎回来</span>
+            <h1 class="home-title">Web<span class="gradient-text">大学</span></h1>
+            <p class="home-subtitle">你的个人学习平台</p>
+            
+            <!-- 用户状态卡片 -->
+            <div class="user-stats-card">
+                <div class="stat-item-mini">
+                    <span class="stat-icon">🎓</span>
+                    <span class="stat-value" id="user-level">Lv.1</span>
+                    <span class="stat-label-mini">新生</span>
+                </div>
+                <div class="stat-divider-mini"></div>
+                <div class="stat-item-mini streak-active">
+                    <span class="stat-icon">🔥</span>
+                    <span class="stat-value" id="user-streak">0</span>
+                    <span class="stat-label-mini">连续天数</span>
+                </div>
+                <div class="stat-divider-mini"></div>
+                <div class="stat-item-mini">
+                    <span class="stat-icon">⭐</span>
+                    <span class="stat-value" id="user-xp">0</span>
+                    <span class="stat-label-mini">经验值</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 环形导航 -->
+        <nav class="circular-nav">
+            <a href="schedule.html" class="nav-module" data-position="top">
+                <span class="module-icon">📅</span>
+                <span class="module-name">日程</span>
+                <span class="module-desc">任务管理</span>
+            </a>
+            <a href="studyroom.html" class="nav-module" data-position="top-right">
+                <span class="module-icon">🧘</span>
+                <span class="module-name">自习室</span>
+                <span class="module-desc">番茄钟</span>
+            </a>
+            <a href="library.html" class="nav-module" data-position="bottom-right">
+                <span class="module-icon">📚</span>
+                <span class="module-name">书架</span>
+                <span class="module-desc">我的图书</span>
+            </a>
+            <a href="course.html" class="nav-module" data-position="bottom">
+                <span class="module-icon">🎓</span>
+                <span class="module-name">课程</span>
+                <span class="module-desc">学习资源</span>
+            </a>
+            <a href="notes.html" class="nav-module" data-position="bottom-left">
+                <span class="module-icon">📝</span>
+                <span class="module-name">笔记</span>
+                <span class="module-desc">知识管理</span>
+            </a>
+            <a href="projects.html" class="nav-module" data-position="top-left">
+                <span class="module-icon">🚀</span>
+                <span class="module-name">项目</span>
+                <span class="module-desc">代码管理</span>
+            </a>
+            <a href="feed.html" class="nav-module" data-position="center-right">
+                <span class="module-icon">📰</span>
+                <span class="module-name">信息</span>
+                <span class="module-desc">博客分享</span>
+            </a>
+            <a href="teacher.html" class="nav-module" data-position="center-left">
+                <span class="module-icon">🤖</span>
+                <span class="module-name">教师</span>
+                <span class="module-desc">AI助教</span>
+            </a>
+        </nav>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="home-footer">
+        <p>Web大学 · 让学习成为习惯</p>
+    </footer>
+
+    <script src="main.js"></script>
+    <script src="gamification.js"></script>
+</body>
+</html>

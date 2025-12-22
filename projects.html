@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web大学 - 项目管理">
+    <title>项目 - Web大学</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="projects.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="page-nav">
+        <a href="index.html" class="back-btn">← 返回</a>
+        <h1 class="page-title">🚀 项目</h1>
+        <button class="add-project-btn" id="addProjectBtn">+ 新建</button>
+    </nav>
+
+    <main class="projects-container">
+        <!-- 搜索和筛选 -->
+        <section class="projects-toolbar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="搜索项目...">
+            </div>
+            <div class="filter-row">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="active">🟢 进行中</button>
+                <button class="filter-btn" data-filter="paused">🟡 暂停</button>
+                <button class="filter-btn" data-filter="completed">✅ 已完成</button>
+            </div>
+        </section>
+
+        <!-- 项目统计 -->
+        <section class="projects-stats">
+            <div class="stat-chip">
+                <span class="stat-chip-icon">🚀</span>
+                <span id="totalProjects">0</span> 个项目
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">🟢</span>
+                <span id="activeProjects">0</span> 进行中
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">✅</span>
+                <span id="completedProjects">0</span> 已完成
+            </div>
+        </section>
+
+        <!-- 项目列表 -->
+        <section class="projects-list" id="projectsList">
+            <div class="empty-state" id="emptyState">
+                <span class="empty-icon">🚀</span>
+                <p class="empty-title">还没有项目</p>
+                <p class="empty-desc">添加你的第一个项目吧！</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 项目编辑弹窗 -->
+    <div class="modal hidden" id="projectModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card project-editor-card">
+            <div class="editor-header">
+                <h2 id="modalTitle">新建项目</h2>
+                <button class="close-editor-btn" id="closeEditor">×</button>
+            </div>
+            
+            <div class="editor-body">
+                <div class="form-group">
+                    <label>项目名称 *</label>
+                    <input type="text" id="projectName" placeholder="我的项目">
+                </div>
+                
+                <div class="form-group">
+                    <label>项目描述</label>
+                    <textarea id="projectDesc" placeholder="简单描述一下这个项目..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>状态</label>
+                        <select id="projectStatus">
+                            <option value="active">🟢 进行中</option>
+                            <option value="paused">🟡 暂停</option>
+                            <option value="completed">✅ 已完成</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>技术栈</label>
+                        <input type="text" id="projectTech" placeholder="React, Node.js...">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>📁 本地路径 (VSCode)</label>
+                    <input type="text" id="projectPath" placeholder="C:\Projects\my-project 或 /Users/me/projects/my-project">
+                    <span class="form-hint">填写后可一键在VSCode中打开</span>
+                </div>
+                
+                <div class="form-group">
+                    <label>🐙 GitHub 链接</label>
+                    <input type="text" id="projectGithub" placeholder="https://github.com/username/repo">
+                </div>
+                
+                <div class="form-group">
+                    <label>🔗 其他链接</label>
+                    <input type="text" id="projectLink" placeholder="部署地址、文档链接等">
+                </div>
+                
+                <div class="form-group">
+                    <label>标签</label>
+                    <input type="text" id="projectTags" placeholder="用逗号分隔，如：学习,前端,个人">
+                </div>
+            </div>
+
+            <div class="editor-actions">
+                <button class="btn-secondary" id="cancelProject">取消</button>
+                <button class="btn-primary" id="saveProject">保存项目</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 项目详情弹窗 -->
+    <div class="modal hidden" id="viewModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card view-card">
+            <div class="view-header">
+                <div class="view-meta">
+                    <span class="view-status" id="viewStatus">🟢 进行中</span>
+                    <span class="view-date" id="viewDate"></span>
+                </div>
+                <div class="view-actions">
+                    <button class="view-btn" id="editProject" title="编辑">✏️</button>
+                    <button class="view-btn" id="deleteProject" title="删除">🗑️</button>
+                    <button class="view-btn" id="closeView" title="关闭">×</button>
+                </div>
+            </div>
+            
+            <h2 class="view-title" id="viewTitle"></h2>
+            <p class="view-desc" id="viewDesc"></p>
+            
+            <div class="view-tags" id="viewTags"></div>
+            
+            <div class="view-tech" id="viewTechSection">
+                <span class="tech-label">技术栈：</span>
+                <span class="tech-value" id="viewTech"></span>
+            </div>
+            
+            <div class="view-links">
+                <a href="#" class="link-btn vscode-btn hidden" id="vscodeBtn">
+                    <span class="link-icon">💻</span>
+                    <span>在 VSCode 打开</span>
+                </a>
+                <a href="#" class="link-btn github-btn hidden" id="githubBtn" target="_blank">
+                    <span class="link-icon">🐙</span>
+                    <span>GitHub</span>
+                </a>
+                <a href="#" class="link-btn other-btn hidden" id="otherBtn" target="_blank">
+                    <span class="link-icon">🔗</span>
+                    <span>访问链接</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="gamification.js"></script>
+    <script src="projects.js"></script>
+</body>
+</html>

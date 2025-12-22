@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web大学 - 智能日程系统">
+    <title>日程 - Web大学</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="schedule.css">
+</head>
+
+<body>
+    <!-- 顶部导航 -->
+    <nav class="page-nav">
+        <a href="index.html" class="back-btn">← 返回</a>
+        <h1 class="page-title">📅 日程</h1>
+        <div class="nav-spacer"></div>
+    </nav>
+
+    <main class="schedule-container">
+        <!-- 状态输入区域 -->
+        <section class="state-input" id="stateInput">
+            <h2 class="section-title-sm">现在的你是什么状态？</h2>
+
+            <div class="input-group">
+                <label class="input-label">精力水平</label>
+                <div class="energy-selector" id="energySelector">
+                    <button class="state-btn" data-value="1" data-label="很累">
+                        <span class="state-icon">😴</span>
+                        <span class="state-text">很累</span>
+                    </button>
+                    <button class="state-btn" data-value="2" data-label="有点累">
+                        <span class="state-icon">😐</span>
+                        <span class="state-text">一般</span>
+                    </button>
+                    <button class="state-btn" data-value="3" data-label="精力充沛">
+                        <span class="state-icon">⚡</span>
+                        <span class="state-text">充沛</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">可用时间</label>
+                <div class="time-selector" id="timeSelector">
+                    <button class="state-btn" data-value="15">15分钟</button>
+                    <button class="state-btn" data-value="30">30分钟</button>
+                    <button class="state-btn" data-value="60">1小时</button>
+                    <button class="state-btn" data-value="120">2小时+</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">当前心情</label>
+                <div class="mood-selector" id="moodSelector">
+                    <button class="state-btn" data-value="anxious" data-label="焦虑">
+                        <span class="state-icon">😟</span>
+                        <span class="state-text">焦虑</span>
+                    </button>
+                    <button class="state-btn" data-value="calm" data-label="平静">
+                        <span class="state-icon">😌</span>
+                        <span class="state-text">平静</span>
+                    </button>
+                    <button class="state-btn" data-value="energetic" data-label="积极">
+                        <span class="state-icon">🔥</span>
+                        <span class="state-text">积极</span>
+                    </button>
+                </div>
+            </div>
+
+            <button class="recommend-btn" id="getRecommendation" disabled>
+                🎯 获取推荐
+            </button>
+        </section>
+
+        <!-- 焦虑模式提示 -->
+        <section class="anxiety-mode hidden" id="anxietyMode">
+            <div class="anxiety-header">
+                <span class="anxiety-icon">🌿</span>
+                <h3>减压模式</h3>
+            </div>
+            <p class="anxiety-text">完成一件小事，就是胜利 ✨</p>
+            <div class="anxiety-actions">
+                <button class="relief-btn" data-action="run">🏃 去跑步</button>
+                <button class="relief-btn" data-action="music">🎵 听音乐</button>
+                <button class="relief-btn" data-action="meditate">🧘 冥想</button>
+            </div>
+        </section>
+
+        <!-- 推荐结果 -->
+        <section class="recommendations hidden" id="recommendations">
+            <h2 class="section-title-sm">🎯 推荐给你</h2>
+            <div class="recommendation-list" id="recommendationList">
+                <!-- 动态填充 -->
+            </div>
+        </section>
+
+        <!-- 分隔线 -->
+        <div class="section-divider"></div>
+
+        <!-- 日历仪表盘 -->
+        <section class="calendar-dashboard">
+            <div class="dashboard-header">
+                <h2 class="section-title-sm">📊 活动日历</h2>
+                <div class="month-nav">
+                    <button class="month-btn" id="prevMonth">‹</button>
+                    <span class="current-month" id="currentMonth"></span>
+                    <button class="month-btn" id="nextMonth">›</button>
+                </div>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <span class="stat-icon">✅</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="monthCompleted">0</span>
+                        <span class="stat-label">本月完成</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">⏱️</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="monthTime">0</span>
+                        <span class="stat-label">总时长(分)</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">🔥</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="currentStreak">0</span>
+                        <span class="stat-label">连续天数</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日历网格 -->
+            <div class="calendar-grid">
+                <div class="calendar-weekdays">
+                    <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                </div>
+                <div class="calendar-days" id="calendarDays"></div>
+            </div>
+
+            <!-- 选中日期详情 -->
+            <div class="day-detail hidden" id="dayDetail">
+                <h3 class="detail-date" id="detailDate"></h3>
+                <div class="detail-tasks" id="detailTasks"></div>
+            </div>
+        </section>
+
+        <!-- 分隔线 -->
+        <div class="section-divider"></div>
+
+        <!-- 任务管理区域 -->
+        <section class="task-management">
+            <div class="task-header">
+                <h2 class="section-title-sm">📝 所有任务</h2>
+                <button class="add-task-btn" id="addTaskBtn">+ 添加任务</button>
+            </div>
+
+            <!-- 任务筛选 -->
+            <div class="task-filters">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="todo">待做</button>
+                <button class="filter-btn" data-filter="doing">进行中</button>
+                <button class="filter-btn" data-filter="done">已完成</button>
+            </div>
+
+            <!-- 任务列表 -->
+            <div class="task-list" id="taskList">
+                <div class="empty-state" id="emptyState">
+                    <span class="empty-icon">📋</span>
+                    <p>还没有任务，添加一个吧！</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 添加/编辑任务弹窗 -->
+    <div class="modal-overlay hidden" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">添加任务</h3>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <form id="taskForm">
+                <div class="form-group">
+                    <label for="taskTitle">任务名称 *</label>
+                    <input type="text" id="taskTitle" placeholder="例如：复习机械制图第一章" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskCategory">类别</label>
+                        <select id="taskCategory">
+                            <option value="study">🎓 学业</option>
+                            <option value="language">🌍 语言</option>
+                            <option value="tech">💻 技术</option>
+                            <option value="health">🏃 健康</option>
+                            <option value="income">💰 收入</option>
+                            <option value="social">👥 社交</option>
+                            <option value="growth">📚 成长</option>
+                            <option value="other">📌 其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskTime">预计时间(分钟)</label>
+                        <input type="number" id="taskTime" value="30" min="5" max="480">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskEnergy">所需精力</label>
+                        <select id="taskEnergy">
+                            <option value="1">😴 低</option>
+                            <option value="2" selected>😐 中</option>
+                            <option value="3">⚡ 高</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskUrgency">紧急程度</label>
+                        <select id="taskUrgency">
+                            <option value="1">⬜ 不紧急</option>
+                            <option value="2" selected>🟨 一般</option>
+                            <option value="3">🟥 紧急</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDeadline">截止日期（可选）</label>
+                    <input type="date" id="taskDeadline">
+                </div>
+
+                <div class="form-group">
+                    <label for="taskXP">完成奖励XP</label>
+                    <input type="number" id="taskXP" value="20" min="5" max="200">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelTask">取消</button>
+                    <button type="submit" class="btn-primary">保存任务</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="schedule.js"></script>
+    <script src="floating-note.js"></script>
+</body>
+
+</html>

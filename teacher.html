@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI教师 - Web大学</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="teacher.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="page-header">
+        <a href="index.html" class="back-btn">← 返回</a>
+        <h1 class="page-title">🤖 AI教师</h1>
+        <div class="header-actions">
+            <button class="icon-btn" id="contextBtn" title="查看上下文">📚</button>
+            <button class="icon-btn" id="settingsBtn" title="设置">⚙️</button>
+        </div>
+    </header>
+
+    <main class="teacher-container">
+        <!-- 侧边栏 - 上下文面板 -->
+        <aside class="context-panel" id="contextPanel">
+            <div class="context-header">
+                <h3>📚 学习上下文</h3>
+                <button class="close-panel-btn" id="closeContext">×</button>
+            </div>
+            <div class="context-body">
+                <div class="context-section">
+                    <h4>📝 最近笔记</h4>
+                    <div class="context-list" id="recentNotes"></div>
+                </div>
+                <div class="context-section">
+                    <h4>📰 信息流</h4>
+                    <div class="context-list" id="recentFeed"></div>
+                </div>
+                <div class="context-section">
+                    <h4>📅 今日任务</h4>
+                    <div class="context-list" id="todayTasks"></div>
+                </div>
+            </div>
+            <div class="context-footer">
+                <label class="context-toggle">
+                    <input type="checkbox" id="includeContext" checked>
+                    <span>自动包含上下文</span>
+                </label>
+            </div>
+        </aside>
+
+        <!-- 主聊天区域 -->
+        <div class="chat-main">
+            <!-- 消息列表 -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">🤖</div>
+                    <h2>你好，我是你的AI助教</h2>
+                    <p>我可以帮你解答学习问题、整理笔记、分析你的学习进度。</p>
+                    <div class="quick-actions">
+                        <button class="quick-btn" data-prompt="帮我总结最近的笔记">📝 总结笔记</button>
+                        <button class="quick-btn" data-prompt="分析我的学习进度">📊 学习分析</button>
+                        <button class="quick-btn" data-prompt="根据我的笔记出几道测试题">❓ 生成测试</button>
+                        <button class="quick-btn" data-prompt="帮我制定学习计划">📅 学习计划</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="userInput" 
+                        placeholder="输入你的问题... (Shift+Enter换行，Enter发送)"
+                        rows="1"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn" title="发送">
+                        <span class="send-icon">➤</span>
+                    </button>
+                </div>
+                <div class="input-hints">
+                    <span class="context-indicator" id="contextIndicator">📚 已加载上下文</span>
+                    <span class="char-count" id="charCount">0</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 设置弹窗 -->
+    <div class="modal hidden" id="settingsModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content settings-modal">
+            <div class="modal-header">
+                <h3>⚙️ AI教师设置</h3>
+                <button class="modal-close" id="closeSettings">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>API 端点</label>
+                    <input type="text" id="apiEndpoint" placeholder="http://localhost:3000/api/chat">
+                    <p class="setting-hint">连接你的后端 CLI Agent 服务</p>
+                </div>
+                <div class="setting-group">
+                    <label>API Key (可选)</label>
+                    <input type="password" id="apiKey" placeholder="sk-...">
+                </div>
+                <div class="setting-group">
+                    <label>系统提示词</label>
+                    <textarea id="systemPrompt" rows="4" placeholder="你是一个友好的AI助教..."></textarea>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="streamResponse" checked>
+                        流式响应
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="resetSettings">重置</button>
+                <button class="btn-primary" id="saveSettings">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="teacher.js"></script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web大学 - 笔记系统">
+    <title>笔记 - Web大学</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="notes.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="page-nav">
+        <a href="index.html" class="back-btn">← 返回</a>
+        <h1 class="page-title">📝 笔记</h1>
+        <button class="add-note-btn" id="addNoteBtn">+ 新建</button>
+    </nav>
+
+    <main class="notes-container">
+        <!-- 搜索和筛选 -->
+        <section class="notes-toolbar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="搜索笔记...">
+            </div>
+            <div class="filter-row">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="course">📚 课程</button>
+                <button class="filter-btn" data-filter="task">📅 任务</button>
+                <button class="filter-btn" data-filter="study">🧘 自习</button>
+                <button class="filter-btn" data-filter="general">📌 通用</button>
+            </div>
+        </section>
+
+        <!-- 笔记统计 -->
+        <section class="notes-stats">
+            <div class="stat-chip">
+                <span class="stat-chip-icon">📝</span>
+                <span id="totalNotes">0</span> 篇笔记
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">📚</span>
+                <span id="courseNotes">0</span> 课程相关
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">📅</span>
+                <span id="taskNotes">0</span> 任务相关
+            </div>
+        </section>
+
+        <!-- 笔记列表 -->
+        <section class="notes-list" id="notesList">
+            <div class="empty-state" id="emptyState">
+                <span class="empty-icon">📝</span>
+                <p class="empty-title">还没有笔记</p>
+                <p class="empty-desc">创建你的第一篇笔记吧！</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 笔记编辑弹窗 -->
+    <div class="modal hidden" id="noteModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card note-editor-card">
+            <div class="editor-header">
+                <input type="text" id="noteTitle" class="note-title-input" placeholder="笔记标题...">
+                <button class="close-editor-btn" id="closeEditor">×</button>
+            </div>
+            
+            <div class="editor-toolbar">
+                <button class="toolbar-btn" data-action="bold" title="粗体">B</button>
+                <button class="toolbar-btn" data-action="italic" title="斜体">I</button>
+                <button class="toolbar-btn" data-action="heading" title="标题">H</button>
+                <button class="toolbar-btn" data-action="list" title="列表">•</button>
+                <button class="toolbar-btn" data-action="code" title="代码">&lt;/&gt;</button>
+                <button class="toolbar-btn" data-action="link" title="链接">🔗</button>
+                <span class="toolbar-divider"></span>
+                <button class="toolbar-btn preview-btn" id="togglePreview" title="预览">👁️</button>
+            </div>
+
+            <div class="editor-body">
+                <textarea id="noteContent" class="note-content-input" placeholder="开始写笔记... 支持Markdown语法"></textarea>
+                <div class="note-preview hidden" id="notePreview"></div>
+            </div>
+
+            <div class="editor-meta">
+                <div class="meta-row">
+                    <label>关联类型</label>
+                    <select id="noteType">
+                        <option value="general">📌 通用笔记</option>
+                        <option value="course">📚 课程笔记</option>
+                        <option value="task">📅 任务笔记</option>
+                        <option value="study">🧘 自习笔记</option>
+                    </select>
+                </div>
+                <div class="meta-row link-row hidden" id="linkRow">
+                    <label>关联项目</label>
+                    <select id="noteLink">
+                        <option value="">选择关联...</option>
+                    </select>
+                </div>
+                <div class="meta-row">
+                    <label>标签</label>
+                    <input type="text" id="noteTags" placeholder="用逗号分隔，如：重要,复习">
+                </div>
+            </div>
+
+            <div class="editor-actions">
+                <button class="btn-secondary" id="cancelNote">取消</button>
+                <button class="btn-primary" id="saveNote">保存笔记</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 笔记查看弹窗 -->
+    <div class="modal hidden" id="viewModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card view-card">
+            <div class="view-header">
+                <div class="view-meta">
+                    <span class="view-type" id="viewType">📌 通用</span>
+                    <span class="view-date" id="viewDate"></span>
+                </div>
+                <div class="view-actions">
+                    <button class="view-btn" id="editNote" title="编辑">✏️</button>
+                    <button class="view-btn" id="deleteNote" title="删除">🗑️</button>
+                    <button class="view-btn" id="closeView" title="关闭">×</button>
+                </div>
+            </div>
+            <h2 class="view-title" id="viewTitle"></h2>
+            <div class="view-tags" id="viewTags"></div>
+            <div class="view-link hidden" id="viewLinkSection">
+                <span class="link-label">关联：</span>
+                <span class="link-value" id="viewLink"></span>
+            </div>
+            <div class="view-content" id="viewContent"></div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="gamification.js"></script>
+    <script src="notes.js"></script>
+</body>
+</html>

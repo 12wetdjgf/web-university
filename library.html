@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web大学 - 我的书架">
+    <title>我的书架 - Web大学</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="library.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="page-nav">
+        <a href="index.html" class="back-btn">← 返回</a>
+        <h1 class="page-title">📚 我的书架</h1>
+        <button class="add-book-btn" id="addBookBtn">+ 添加</button>
+    </nav>
+
+    <main class="library-container">
+        <!-- 统计概览 -->
+        <section class="library-stats">
+            <div class="stat-chip">
+                <span class="stat-chip-icon">📖</span>
+                <span id="totalBooks">0</span> 本书
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">📕</span>
+                <span id="readingCount">0</span> 在读
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">✅</span>
+                <span id="finishedCount">0</span> 已读
+            </div>
+        </section>
+
+        <!-- 筛选标签 -->
+        <section class="filter-section">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="want-to-read">想读</button>
+            <button class="filter-btn" data-filter="reading">在读</button>
+            <button class="filter-btn" data-filter="finished">已读</button>
+        </section>
+
+        <!-- 书籍列表 -->
+        <section class="books-grid" id="booksGrid">
+            <div class="empty-state" id="emptyState">
+                <span class="empty-icon">📚</span>
+                <p class="empty-title">书架空空如也</p>
+                <p class="empty-desc">添加你的第一本书吧！</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 添加书籍弹窗 -->
+    <div class="modal hidden" id="addBookModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card">
+            <h3 class="modal-title">📖 添加书籍</h3>
+            
+            <!-- 添加模式切换 -->
+            <div class="add-mode-tabs">
+                <button class="mode-tab active" data-mode="single">单本添加</button>
+                <button class="mode-tab" data-mode="import">批量导入</button>
+            </div>
+
+            <!-- 单本添加表单 -->
+            <div class="add-form" id="singleForm">
+                <div class="form-group">
+                    <label>书名 *</label>
+                    <input type="text" id="bookTitle" placeholder="例如：三体">
+                </div>
+                <div class="form-group">
+                    <label>作者</label>
+                    <input type="text" id="bookAuthor" placeholder="例如：刘慈欣">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>分类</label>
+                        <select id="bookGenre">
+                            <option value="小说">小说</option>
+                            <option value="科幻">科幻</option>
+                            <option value="历史">历史</option>
+                            <option value="哲学">哲学</option>
+                            <option value="心理">心理</option>
+                            <option value="经济">经济</option>
+                            <option value="技术">技术</option>
+                            <option value="传记">传记</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>封面颜色</label>
+                        <input type="color" id="bookColor" value="#E2C2B3">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>简介（可选）</label>
+                    <textarea id="bookSummary" placeholder="写点关于这本书的内容..." rows="2"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-secondary" id="cancelAdd">取消</button>
+                    <button class="btn-primary" id="confirmAdd">添加</button>
+                </div>
+            </div>
+
+            <!-- 批量导入表单 -->
+            <div class="add-form hidden" id="importForm">
+                <p class="import-hint">粘贴包含书名的文本，每行一本书（可包含作者）</p>
+                <div class="form-group">
+                    <textarea id="importText" placeholder="例如：
+三体 - 刘慈欣
+百年孤独 - 马尔克斯
+人类简史" rows="6"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-secondary" id="cancelImport">取消</button>
+                    <button class="btn-primary" id="confirmImport">导入</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 书籍详情/编辑弹窗 -->
+    <div class="modal hidden" id="bookDetailModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card book-detail-card">
+            <div class="book-detail-header" id="detailHeader">
+                <span class="detail-genre" id="detailGenre">小说</span>
+                <button class="delete-btn" id="deleteBook" title="删除">🗑️</button>
+            </div>
+            <h3 class="detail-title" id="detailTitle">书名</h3>
+            <p class="detail-author" id="detailAuthor">作者</p>
+            <p class="detail-summary" id="detailSummary">简介内容...</p>
+            
+            <div class="detail-status">
+                <label>阅读状态</label>
+                <div class="status-options">
+                    <button class="status-btn" data-status="want-to-read">
+                        <span>🕐</span> 想读
+                    </button>
+                    <button class="status-btn" data-status="reading">
+                        <span>📖</span> 在读
+                    </button>
+                    <button class="status-btn" data-status="finished">
+                        <span>✅</span> 已读
+                    </button>
+                </div>
+            </div>
+
+            <div class="detail-rating">
+                <label>我的评分</label>
+                <div class="star-rating" id="detailRating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+            </div>
+
+            <button class="btn-primary btn-close-detail" id="closeDetail">完成</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="gamification.js"></script>
+    <script src="library.js"></script>
+</body>
+</html>

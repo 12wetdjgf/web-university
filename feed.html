@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web大学 - 信息流">
+    <title>信息 - Web大学</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="feed.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="page-nav">
+        <a href="index.html" class="back-btn">← 返回</a>
+        <h1 class="page-title">📰 信息</h1>
+        <button class="add-post-btn" id="addPostBtn">+ 发布</button>
+    </nav>
+
+    <main class="feed-container">
+        <!-- 标签页切换 -->
+        <section class="feed-tabs">
+            <button class="tab-btn active" data-tab="feed">📰 信息流</button>
+            <button class="tab-btn" data-tab="shared">📝 共享笔记</button>
+            <button class="tab-btn" data-tab="my">👤 我的发布</button>
+        </section>
+
+        <!-- 信息流统计 -->
+        <section class="feed-stats">
+            <div class="stat-chip">
+                <span class="stat-chip-icon">📰</span>
+                <span id="totalPosts">0</span> 篇内容
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">📝</span>
+                <span id="sharedNotes">0</span> 共享笔记
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">🔗</span>
+                <span id="externalFeeds">0</span> 外部源
+            </div>
+        </section>
+
+        <!-- 外部源管理（未来扩展） -->
+        <section class="external-sources hidden" id="externalSources">
+            <div class="sources-header">
+                <h3>📡 外部信息源</h3>
+                <span class="coming-soon-badge">即将推出</span>
+            </div>
+            <div class="sources-preview">
+                <div class="source-item disabled">
+                    <span class="source-icon">🐦</span>
+                    <span class="source-name">Twitter</span>
+                </div>
+                <div class="source-item disabled">
+                    <span class="source-icon">🔴</span>
+                    <span class="source-name">Reddit</span>
+                </div>
+                <div class="source-item disabled">
+                    <span class="source-icon">📰</span>
+                    <span class="source-name">RSS</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 内容列表 -->
+        <section class="feed-list" id="feedList">
+            <div class="empty-state" id="emptyState">
+                <span class="empty-icon">📰</span>
+                <p class="empty-title">还没有内容</p>
+                <p class="empty-desc">发布你的第一篇内容，或共享笔记吧！</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 发布弹窗 -->
+    <div class="modal hidden" id="postModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card post-editor-card">
+            <div class="editor-header">
+                <h3>发布内容</h3>
+                <button class="close-editor-btn" id="closeEditor">×</button>
+            </div>
+            
+            <div class="editor-type-selector">
+                <button class="type-btn active" data-type="post">
+                    <span>📝</span> 原创内容
+                </button>
+                <button class="type-btn" data-type="share">
+                    <span>🔗</span> 共享笔记
+                </button>
+            </div>
+
+            <!-- 原创内容表单 -->
+            <div class="post-form" id="postForm">
+                <input type="text" id="postTitle" class="post-title-input" placeholder="标题（可选）">
+                <textarea id="postContent" class="post-content-input" placeholder="分享你的想法..."></textarea>
+                <div class="post-meta">
+                    <div class="meta-row">
+                        <label>标签</label>
+                        <input type="text" id="postTags" placeholder="用逗号分隔">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 共享笔记表单 -->
+            <div class="share-form hidden" id="shareForm">
+                <div class="share-note-selector">
+                    <label>选择要共享的笔记</label>
+                    <select id="noteSelector">
+                        <option value="">-- 选择笔记 --</option>
+                    </select>
+                </div>
+                <div class="share-preview hidden" id="sharePreview">
+                    <h4 id="previewTitle"></h4>
+                    <p id="previewContent"></p>
+                </div>
+                <div class="share-comment">
+                    <label>添加评论（可选）</label>
+                    <textarea id="shareComment" placeholder="说点什么..."></textarea>
+                </div>
+            </div>
+
+            <div class="editor-actions">
+                <button class="btn-secondary" id="cancelPost">取消</button>
+                <button class="btn-primary" id="publishPost">发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 内容查看弹窗 -->
+    <div class="modal hidden" id="viewModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card view-card">
+            <div class="view-header">
+                <div class="view-meta">
+                    <span class="view-type" id="viewType">📝 原创</span>
+                    <span class="view-date" id="viewDate"></span>
+                </div>
+                <div class="view-actions">
+                    <button class="view-btn" id="deletePost" title="删除">🗑️</button>
+                    <button class="view-btn" id="closeView" title="关闭">×</button>
+                </div>
+            </div>
+            <h2 class="view-title" id="viewTitle"></h2>
+            <div class="view-tags" id="viewTags"></div>
+            <div class="view-content" id="viewContent"></div>
+            <div class="view-source hidden" id="viewSource">
+                <span class="source-label">来源笔记：</span>
+                <a href="#" id="sourceLink"></a>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="gamification.js"></script>
+    <script src="feed.js"></script>
+</body>
+</html>

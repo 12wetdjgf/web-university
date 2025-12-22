@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web大学 - 自习室">
+    <title>自习室 - Web大学</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="studyroom.css">
+    <!-- APlayer 播放器 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="page-nav">
+        <a href="index.html" class="back-btn">← 返回</a>
+        <h1 class="page-title">🧘 自习室</h1>
+        <div class="nav-spacer"></div>
+    </nav>
+
+    <main class="studyroom-container">
+        <!-- 氛围选择 -->
+        <section class="ambiance-section">
+            <div class="ambiance-header">
+                <span class="ambiance-icon">🎨</span>
+                <span>选择氛围</span>
+            </div>
+            <div class="ambiance-options">
+                <button class="ambiance-btn active" data-theme="default" data-bg="#FBF8F3">
+                    <span class="ambiance-preview" style="background: linear-gradient(135deg, #FBF8F3, #F5F0E8)"></span>
+                    <span>默认</span>
+                </button>
+                <button class="ambiance-btn" data-theme="forest" data-bg="#E8F5E9">
+                    <span class="ambiance-preview" style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9)"></span>
+                    <span>森林</span>
+                </button>
+                <button class="ambiance-btn" data-theme="ocean" data-bg="#E3F2FD">
+                    <span class="ambiance-preview" style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB)"></span>
+                    <span>海洋</span>
+                </button>
+                <button class="ambiance-btn" data-theme="sunset" data-bg="#FFF3E0">
+                    <span class="ambiance-preview" style="background: linear-gradient(135deg, #FFF3E0, #FFE0B2)"></span>
+                    <span>日落</span>
+                </button>
+                <button class="ambiance-btn" data-theme="night" data-bg="#263238">
+                    <span class="ambiance-preview" style="background: linear-gradient(135deg, #263238, #37474F)"></span>
+                    <span>深夜</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 音乐播放器 -->
+        <section class="music-player">
+            <div class="player-header">
+                <span class="player-icon">🎵</span>
+                <span>学习音乐</span>
+                <button class="add-music-btn" id="addMusicBtn" title="添加音乐">+</button>
+            </div>
+            <div id="aplayer"></div>
+            <div class="playlist-actions">
+                <button class="playlist-btn" id="clearPlaylist">🗑️ 清空</button>
+                <label class="playlist-btn upload-btn">
+                    📁 本地文件
+                    <input type="file" id="localMusic" accept="audio/*" multiple hidden>
+                </label>
+            </div>
+        </section>
+
+        <!-- 添加音乐弹窗 -->
+        <div class="add-music-modal hidden" id="addMusicModal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-card">
+                <h3>添加音乐</h3>
+                <div class="form-group">
+                    <label>歌曲名称</label>
+                    <input type="text" id="musicName" placeholder="例如：Lofi Study Beats">
+                </div>
+                <div class="form-group">
+                    <label>歌手（可选）</label>
+                    <input type="text" id="musicArtist" placeholder="例如：ChilledCow">
+                </div>
+                <div class="form-group">
+                    <label>音乐链接</label>
+                    <input type="text" id="musicUrl" placeholder="https://... 或 本地路径">
+                </div>
+                <div class="form-group">
+                    <label>封面链接（可选）</label>
+                    <input type="text" id="musicCover" placeholder="https://...">
+                </div>
+                <div class="form-actions">
+                    <button class="btn-secondary" id="cancelMusic">取消</button>
+                    <button class="btn-primary" id="confirmMusic">添加</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 番茄钟主区域 -->
+        <section class="timer-section">
+            <!-- 计时器圆环 -->
+            <div class="timer-ring-container">
+                <svg class="timer-ring" viewBox="0 0 200 200">
+                    <circle class="timer-ring-bg" cx="100" cy="100" r="90" />
+                    <circle class="timer-ring-progress" cx="100" cy="100" r="90" id="timerProgress" />
+                </svg>
+                <div class="timer-content">
+                    <div class="timer-display" id="timerDisplay">25:00</div>
+                    <div class="timer-label" id="timerLabel">专注时间</div>
+                </div>
+            </div>
+
+            <!-- 模式选择 -->
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="focus" data-duration="25">
+                    <span class="mode-icon">🎯</span>
+                    <span>专注</span>
+                    <span class="mode-time">25分钟</span>
+                </button>
+                <button class="mode-btn" data-mode="short" data-duration="5">
+                    <span class="mode-icon">☕</span>
+                    <span>短休</span>
+                    <span class="mode-time">5分钟</span>
+                </button>
+                <button class="mode-btn" data-mode="long" data-duration="15">
+                    <span class="mode-icon">🌿</span>
+                    <span>长休</span>
+                    <span class="mode-time">15分钟</span>
+                </button>
+            </div>
+
+            <!-- 控制按钮 -->
+            <div class="timer-controls">
+                <button class="control-btn secondary" id="resetBtn" title="重置">
+                    <span>↺</span>
+                </button>
+                <button class="control-btn primary" id="startBtn">
+                    <span class="btn-icon" id="startIcon">▶</span>
+                    <span id="startText">开始专注</span>
+                </button>
+                <button class="control-btn secondary" id="skipBtn" title="跳过">
+                    <span>⏭</span>
+                </button>
+            </div>
+
+            <!-- 番茄计数 -->
+            <div class="pomodoro-count">
+                <span class="pomodoro-label">今日番茄</span>
+                <div class="pomodoro-dots" id="pomodoroDots">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+                <span class="pomodoro-number" id="pomodoroCount">0/4</span>
+            </div>
+        </section>
+
+        <!-- 当前任务 -->
+        <section class="current-task-section">
+            <div class="task-selector">
+                <span class="task-icon">📝</span>
+                <select id="taskSelect">
+                    <option value="">选择要专注的任务...</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- 今日统计 -->
+        <section class="stats-section">
+            <h2 class="section-title-sm">📊 今日专注</h2>
+            <div class="focus-stats">
+                <div class="focus-stat-card">
+                    <div class="stat-icon-lg">⏱️</div>
+                    <div class="stat-details">
+                        <span class="stat-value-lg" id="totalFocusTime">0</span>
+                        <span class="stat-unit">分钟</span>
+                    </div>
+                    <span class="stat-label-lg">专注时长</span>
+                </div>
+                <div class="focus-stat-card">
+                    <div class="stat-icon-lg">🍅</div>
+                    <div class="stat-details">
+                        <span class="stat-value-lg" id="totalPomodoros">0</span>
+                        <span class="stat-unit">个</span>
+                    </div>
+                    <span class="stat-label-lg">完成番茄</span>
+                </div>
+                <div class="focus-stat-card">
+                    <div class="stat-icon-lg">✨</div>
+                    <div class="stat-details">
+                        <span class="stat-value-lg" id="earnedXP">0</span>
+                        <span class="stat-unit">XP</span>
+                    </div>
+                    <span class="stat-label-lg">获得经验</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 专注历史 -->
+        <section class="history-section">
+            <h2 class="section-title-sm">📅 专注记录</h2>
+            <div class="focus-history" id="focusHistory">
+                <p class="empty-history">今天还没有专注记录，开始你的第一个番茄吧！</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 完成弹窗 -->
+    <div class="completion-modal hidden" id="completionModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card">
+            <div class="modal-emoji" id="modalEmoji">🎉</div>
+            <h3 class="modal-title" id="modalTitle">专注完成！</h3>
+            <p class="modal-message" id="modalMessage">太棒了，你完成了25分钟的专注</p>
+            <div class="modal-reward">
+                <span class="reward-xp" id="rewardXP">+30 XP</span>
+            </div>
+            <button class="modal-btn" id="modalBtn">继续</button>
+        </div>
+    </div>
+
+    <!-- 音效 -->
+    <audio id="tickSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRl9vT19teleXBhdmVmbXQgAAAAEABAABAAEAIABAABAAEAIABkYXRh" type="audio/wav">
+    </audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+    <script src="main.js"></script>
+    <script src="gamification.js"></script>
+    <script src="studyroom.js"></script>
+    <script src="floating-note.js"></script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web大学 - 我的课程">
+    <title>课程 - Web大学</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="course.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="page-nav">
+        <a href="index.html" class="back-btn">← 返回</a>
+        <h1 class="page-title">🎓 我的课程</h1>
+        <button class="add-course-btn" id="addCourseBtn">+ 添加</button>
+    </nav>
+
+    <main class="course-container">
+        <!-- 学习统计 -->
+        <section class="course-stats">
+            <div class="stat-chip">
+                <span class="stat-chip-icon">📚</span>
+                <span id="totalCourses">0</span> 门课程
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">📖</span>
+                <span id="learningCount">0</span> 学习中
+            </div>
+            <div class="stat-chip">
+                <span class="stat-chip-icon">✅</span>
+                <span id="completedCount">0</span> 已完成
+            </div>
+        </section>
+
+        <!-- 分类筛选 -->
+        <section class="filter-section">
+            <div class="filter-row">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="not-started">未开始</button>
+                <button class="filter-btn" data-filter="learning">学习中</button>
+                <button class="filter-btn" data-filter="completed">已完成</button>
+            </div>
+            <div class="category-row">
+                <button class="category-btn active" data-category="all">🏷️ 全部</button>
+                <button class="category-btn" data-category="cs">💻 计算机</button>
+                <button class="category-btn" data-category="ai">🤖 AI</button>
+                <button class="category-btn" data-category="language">🌍 语言</button>
+                <button class="category-btn" data-category="tool">🔧 工具</button>
+                <button class="category-btn" data-category="other">📌 其他</button>
+            </div>
+        </section>
+
+        <!-- 课程列表 -->
+        <section class="courses-list" id="coursesList">
+            <div class="empty-state" id="emptyState">
+                <span class="empty-icon">🎓</span>
+                <p class="empty-title">还没有课程</p>
+                <p class="empty-desc">添加你的第一门课程吧！</p>
+            </div>
+        </section>
+
+        <!-- 推荐资源 -->
+        <section class="resources-section">
+            <h2 class="section-title-sm">🔗 学习资源</h2>
+            <div class="resources-grid" id="resourcesGrid">
+                <!-- 动态填充 -->
+            </div>
+        </section>
+    </main>
+
+    <!-- 添加/编辑课程弹窗 -->
+    <div class="modal hidden" id="courseModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card">
+            <h3 class="modal-title" id="modalTitle">📚 添加课程</h3>
+            <form id="courseForm">
+                <div class="form-group">
+                    <label>课程名称 *</label>
+                    <input type="text" id="courseName" placeholder="例如：CS61A" required>
+                </div>
+                <div class="form-group">
+                    <label>课程来源</label>
+                    <input type="text" id="courseSource" placeholder="例如：UC Berkeley">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>分类</label>
+                        <select id="courseCategory">
+                            <option value="cs">💻 计算机</option>
+                            <option value="ai">🤖 AI</option>
+                            <option value="language">🌍 语言</option>
+                            <option value="tool">🔧 工具</option>
+                            <option value="other">📌 其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>总章节数</label>
+                        <input type="number" id="courseTotalLessons" value="10" min="1" max="200">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>课程链接（可选）</label>
+                    <input type="url" id="courseUrl" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>备注（可选）</label>
+                    <textarea id="courseNotes" placeholder="关于这门课程的笔记..." rows="2"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelCourse">取消</button>
+                    <button type="submit" class="btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 课程详情弹窗 -->
+    <div class="modal hidden" id="detailModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card detail-card">
+            <div class="detail-header" id="detailHeader">
+                <span class="detail-category" id="detailCategory">💻 计算机</span>
+                <button class="delete-btn" id="deleteCourse" title="删除">🗑️</button>
+            </div>
+            <h3 class="detail-title" id="detailTitle">课程名称</h3>
+            <p class="detail-source" id="detailSource">来源</p>
+            
+            <!-- 进度条 -->
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span>学习进度</span>
+                    <span class="progress-text" id="progressText">0/10</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-controls">
+                    <button class="progress-btn" id="decreaseProgress">−</button>
+                    <span class="progress-current" id="progressCurrent">0</span>
+                    <button class="progress-btn" id="increaseProgress">+</button>
+                </div>
+            </div>
+
+            <!-- 状态选择 -->
+            <div class="detail-status">
+                <label>学习状态</label>
+                <div class="status-options">
+                    <button class="status-btn" data-status="not-started">
+                        <span>🕐</span> 未开始
+                    </button>
+                    <button class="status-btn" data-status="learning">
+                        <span>📖</span> 学习中
+                    </button>
+                    <button class="status-btn" data-status="completed">
+                        <span>✅</span> 已完成
+                    </button>
+                </div>
+            </div>
+
+            <!-- 课程链接 -->
+            <div class="detail-link" id="detailLinkSection">
+                <a href="#" id="detailLink" target="_blank" class="course-link-btn">
+                    🔗 打开课程
+                </a>
+            </div>
+
+            <!-- 备注 -->
+            <div class="detail-notes" id="detailNotesSection">
+                <label>备注</label>
+                <p id="detailNotes">暂无备注</p>
+            </div>
+
+            <button class="btn-primary btn-close-detail" id="closeDetail">完成</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="gamification.js"></script>
+    <script src="course.js"></script>
+    <script src="floating-note.js"></script>
+</body>
+</html>
