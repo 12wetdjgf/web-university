@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="teacher.css">
 </head>
+
 <body>
     <!-- 顶部导航 -->
     <header class="page-header">
@@ -70,11 +72,7 @@
             <!-- 输入区域 -->
             <div class="chat-input-area">
                 <div class="input-wrapper">
-                    <textarea 
-                        id="userInput" 
-                        placeholder="输入你的问题... (Shift+Enter换行，Enter发送)"
-                        rows="1"
-                    ></textarea>
+                    <textarea id="userInput" placeholder="输入你的问题... (Shift+Enter换行，Enter发送)" rows="1"></textarea>
                     <button class="send-btn" id="sendBtn" title="发送">
                         <span class="send-icon">➤</span>
                     </button>
@@ -123,6 +121,8 @@
         </div>
     </div>
 
+    <script src="supabase.js"></script>
     <script src="teacher.js"></script>
 </body>
+
 </html>

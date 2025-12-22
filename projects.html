@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="projects.css">
 </head>
+
 <body>
     <!-- 顶部导航 -->
     <nav class="page-nav">
@@ -68,18 +70,18 @@
                 <h2 id="modalTitle">新建项目</h2>
                 <button class="close-editor-btn" id="closeEditor">×</button>
             </div>
-            
+
             <div class="editor-body">
                 <div class="form-group">
                     <label>项目名称 *</label>
                     <input type="text" id="projectName" placeholder="我的项目">
                 </div>
-                
+
                 <div class="form-group">
                     <label>项目描述</label>
                     <textarea id="projectDesc" placeholder="简单描述一下这个项目..."></textarea>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>状态</label>
@@ -94,23 +96,24 @@
                         <input type="text" id="projectTech" placeholder="React, Node.js...">
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label>📁 本地路径 (VSCode)</label>
-                    <input type="text" id="projectPath" placeholder="C:\Projects\my-project 或 /Users/me/projects/my-project">
+                    <input type="text" id="projectPath"
+                        placeholder="C:\Projects\my-project 或 /Users/me/projects/my-project">
                     <span class="form-hint">填写后可一键在VSCode中打开</span>
                 </div>
-                
+
                 <div class="form-group">
                     <label>🐙 GitHub 链接</label>
                     <input type="text" id="projectGithub" placeholder="https://github.com/username/repo">
                 </div>
-                
+
                 <div class="form-group">
                     <label>🔗 其他链接</label>
                     <input type="text" id="projectLink" placeholder="部署地址、文档链接等">
                 </div>
-                
+
                 <div class="form-group">
                     <label>标签</label>
                     <input type="text" id="projectTags" placeholder="用逗号分隔，如：学习,前端,个人">
@@ -139,17 +142,17 @@
                     <button class="view-btn" id="closeView" title="关闭">×</button>
                 </div>
             </div>
-            
+
             <h2 class="view-title" id="viewTitle"></h2>
             <p class="view-desc" id="viewDesc"></p>
-            
+
             <div class="view-tags" id="viewTags"></div>
-            
+
             <div class="view-tech" id="viewTechSection">
                 <span class="tech-label">技术栈：</span>
                 <span class="tech-value" id="viewTech"></span>
             </div>
-            
+
             <div class="view-links">
                 <a href="#" class="link-btn vscode-btn hidden" id="vscodeBtn">
                     <span class="link-icon">💻</span>
@@ -167,8 +170,10 @@
         </div>
     </div>
 
+    <script src="supabase.js"></script>
     <script src="main.js"></script>
     <script src="gamification.js"></script>
     <script src="projects.js"></script>
 </body>
+
 </html>

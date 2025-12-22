@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="notes.css">
 </head>
+
 <body>
     <!-- 顶部导航 -->
     <nav class="page-nav">
@@ -69,7 +71,7 @@
                 <input type="text" id="noteTitle" class="note-title-input" placeholder="笔记标题...">
                 <button class="close-editor-btn" id="closeEditor">×</button>
             </div>
-            
+
             <div class="editor-toolbar">
                 <button class="toolbar-btn" data-action="bold" title="粗体">B</button>
                 <button class="toolbar-btn" data-action="italic" title="斜体">I</button>
@@ -140,8 +142,10 @@
         </div>
     </div>
 
+    <script src="supabase.js"></script>
     <script src="main.js"></script>
     <script src="gamification.js"></script>
     <script src="notes.js"></script>
 </body>
+
 </html>

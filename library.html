@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="library.css">
 </head>
+
 <body>
     <!-- 顶部导航 -->
     <nav class="page-nav">
@@ -59,7 +61,7 @@
         <div class="modal-backdrop"></div>
         <div class="modal-card">
             <h3 class="modal-title">📖 添加书籍</h3>
-            
+
             <!-- 添加模式切换 -->
             <div class="add-mode-tabs">
                 <button class="mode-tab active" data-mode="single">单本添加</button>
@@ -134,7 +136,7 @@
             <h3 class="detail-title" id="detailTitle">书名</h3>
             <p class="detail-author" id="detailAuthor">作者</p>
             <p class="detail-summary" id="detailSummary">简介内容...</p>
-            
+
             <div class="detail-status">
                 <label>阅读状态</label>
                 <div class="status-options">
@@ -165,8 +167,10 @@
         </div>
     </div>
 
+    <script src="supabase.js"></script>
     <script src="main.js"></script>
     <script src="gamification.js"></script>
     <script src="library.js"></script>
 </body>
+
 </html>
