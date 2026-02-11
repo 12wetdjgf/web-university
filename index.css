@@ -1353,6 +1353,45 @@ button {
     background: var(--color-accent-hover);
 }
 
+.cloud-sync-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-sm);
+}
+
+.cloud-sync-btn {
+    padding: 6px 10px;
+    border: 1px solid var(--color-border);
+    background: var(--color-cream-50);
+    color: var(--color-text-secondary);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    transition: all var(--transition-fast);
+}
+
+.cloud-sync-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.cloud-sync-input {
+    width: min(260px, 70vw);
+    padding: 6px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-cream-50);
+    font-size: var(--text-xs);
+}
+
+.cloud-sync-status {
+    min-height: 18px;
+    font-size: var(--text-xs);
+    color: var(--color-text-tertiary);
+}
+
 @media (max-width: 480px) {
     .quick-note-popup {
         left: var(--spacing-md);

@@ -1,518 +1,467 @@
 /**
- * Web大学 - 课程管理系统
- * 学习进度追踪 + 资源链接管理
+ * Web大学 - 课程模块
+ * 两部分：
+ * 1) 习惯打卡
+ * 2) 课表安排
  */
 
-// ============================================
-// 配置与状态
-// ============================================
+const HABITS_STORAGE_KEY = 'webuni_habits';
+const SCHEDULE_STORAGE_KEY = 'webuni_courses';
 
-const COURSES_STORAGE_KEY = 'webuni_courses';
-
-// 分类配置
-const CATEGORIES = {
-    cs: { icon: '💻', name: '计算机', color: '#4A90D9' },
-    ai: { icon: '🤖', name: 'AI', color: '#9B59B6' },
-    language: { icon: '🌍', name: '语言', color: '#27AE60' },
-    tool: { icon: '🔧', name: '工具', color: '#E67E22' },
-    other: { icon: '📌', name: '其他', color: '#95A5A6' }
-};
-
-// 状态配置
-const STATUS_CONFIG = {
-    'not-started': { icon: '🕐', name: '未开始' },
-    'learning': { icon: '📖', name: '学习中' },
-    'completed': { icon: '✅', name: '已完成' }
-};
-
-// 预设学习资源
-const DEFAULT_RESOURCES = [
-    { name: 'CS自学指南', url: 'https://csdiy.wiki/', icon: '📖', desc: '计算机自学路线' },
-    { name: 'CS50', url: 'https://cs50.harvard.edu/', icon: '🎓', desc: 'Harvard入门课' },
-    { name: 'CS61A', url: 'https://cs61a.org/', icon: '🐍', desc: 'Berkeley Python' },
-    { name: 'CS61B', url: 'https://sp24.datastructur.es/', icon: '☕', desc: 'Berkeley Java' },
-    { name: '李宏毅ML', url: 'https://speech.ee.ntu.edu.tw/~hylee/ml/2024-spring.php', icon: '🤖', desc: '机器学习课程' },
-    { name: 'DeepLearning.AI', url: 'https://www.deeplearning.ai/', icon: '🧠', desc: '吴恩达课程' },
-    { name: 'Z-Library', url: 'https://z-lib.io/', icon: '📚', desc: '电子书资源' },
-    { name: 'NotebookLM', url: 'https://notebooklm.google/', icon: '📝', desc: 'AI笔记工具' }
+const WEEK_DAYS = [
+    { key: 1, label: '周一' },
+    { key: 2, label: '周二' },
+    { key: 3, label: '周三' },
+    { key: 4, label: '周四' },
+    { key: 5, label: '周五' },
+    { key: 6, label: '周六' },
+    { key: 0, label: '周日' }
 ];
 
-// 预设课程（基于用户学习路径）
-const DEFAULT_COURSES = [
-    { 
-        id: 'c1', name: 'CS50', source: 'Harvard', category: 'cs',
-        totalLessons: 12, completedLessons: 0, status: 'not-started',
-        url: 'https://cs50.harvard.edu/', notes: '计算机科学入门课程'
+const PERIODS = {
+    morning: '上午',
+    afternoon: '下午',
+    evening: '晚上'
+};
+
+const DEFAULT_HABITS = [
+    { id: 'h1', name: '健身', minutes: 10, createdAt: Date.now() },
+    { id: 'h2', name: '背单词', minutes: 20, createdAt: Date.now() }
+];
+
+const DEFAULT_SCHEDULE = [
+    {
+        id: 's1',
+        name: '计算机科学',
+        dayOfWeek: 1,
+        period: 'evening',
+        startTime: '19:00',
+        endTime: '20:30',
+        goal: 'CS50 / CS61A',
+        createdAt: Date.now()
     },
-    { 
-        id: 'c2', name: 'CS61A', source: 'UC Berkeley', category: 'cs',
-        totalLessons: 40, completedLessons: 0, status: 'not-started',
-        url: 'https://cs61a.org/', notes: 'Python编程与计算机程序结构'
-    },
-    { 
-        id: 'c3', name: 'CS61B', source: 'UC Berkeley', category: 'cs',
-        totalLessons: 40, completedLessons: 0, status: 'not-started',
-        url: 'https://sp24.datastructur.es/', notes: '数据结构与算法'
-    },
-    { 
-        id: 'c4', name: '机器学习2024', source: '李宏毅', category: 'ai',
-        totalLessons: 25, completedLessons: 0, status: 'not-started',
-        url: 'https://speech.ee.ntu.edu.tw/~hylee/ml/2024-spring.php', notes: '深度学习入门'
-    },
-    { 
-        id: 'c5', name: '雅思备考', source: '自学', category: 'language',
-        totalLessons: 30, completedLessons: 0, status: 'not-started',
-        url: '', notes: '听说读写四项训练'
+    {
+        id: 's2',
+        name: '英语学习',
+        dayOfWeek: 3,
+        period: 'evening',
+        startTime: '19:30',
+        endTime: '20:30',
+        goal: '听力+写作',
+        createdAt: Date.now()
     }
 ];
 
-let courses = [];
-let currentFilter = 'all';
-let currentCategory = 'all';
-let currentCourseId = null;
-
-// ============================================
-// DOM 元素
-// ============================================
+let habits = [];
+let scheduleItems = [];
+let currentModule = 'habits';
+let editingScheduleId = null;
 
 let elements = {};
 
 document.addEventListener('DOMContentLoaded', () => {
     cacheElements();
-    loadCourses();
-    initEventListeners();
-    renderCourses();
-    renderResources();
-    updateStats();
+    loadData();
+    bindEvents();
+    renderAll();
 });
 
 function cacheElements() {
     elements = {
-        coursesList: document.getElementById('coursesList'),
-        emptyState: document.getElementById('emptyState'),
-        resourcesGrid: document.getElementById('resourcesGrid'),
-        totalCourses: document.getElementById('totalCourses'),
-        learningCount: document.getElementById('learningCount'),
-        completedCount: document.getElementById('completedCount'),
-        // 弹窗
-        courseModal: document.getElementById('courseModal'),
-        detailModal: document.getElementById('detailModal'),
-        courseForm: document.getElementById('courseForm'),
-        // 表单字段
-        courseName: document.getElementById('courseName'),
-        courseSource: document.getElementById('courseSource'),
-        courseCategory: document.getElementById('courseCategory'),
-        courseTotalLessons: document.getElementById('courseTotalLessons'),
-        courseUrl: document.getElementById('courseUrl'),
-        courseNotes: document.getElementById('courseNotes'),
-        // 详情字段
-        detailHeader: document.getElementById('detailHeader'),
-        detailCategory: document.getElementById('detailCategory'),
-        detailTitle: document.getElementById('detailTitle'),
-        detailSource: document.getElementById('detailSource'),
-        progressText: document.getElementById('progressText'),
-        progressFill: document.getElementById('progressFill'),
-        progressCurrent: document.getElementById('progressCurrent'),
-        detailLink: document.getElementById('detailLink'),
-        detailLinkSection: document.getElementById('detailLinkSection'),
-        detailNotes: document.getElementById('detailNotes'),
-        detailNotesSection: document.getElementById('detailNotesSection')
+        addMainBtn: document.getElementById('addMainBtn'),
+        switchBtns: document.querySelectorAll('.switch-btn'),
+        habitsPanel: document.getElementById('habitsPanel'),
+        timetablePanel: document.getElementById('timetablePanel'),
+        habitList: document.getElementById('habitList'),
+        habitEmpty: document.getElementById('habitEmpty'),
+        timetableGrid: document.getElementById('timetableGrid'),
+        timetableList: document.getElementById('timetableList'),
+        scheduleEmpty: document.getElementById('scheduleEmpty'),
+        todayDone: document.getElementById('todayDone'),
+        habitCount: document.getElementById('habitCount'),
+        bestStreak: document.getElementById('bestStreak'),
+        habitModal: document.getElementById('habitModal'),
+        habitForm: document.getElementById('habitForm'),
+        habitName: document.getElementById('habitName'),
+        habitMinutes: document.getElementById('habitMinutes'),
+        cancelHabit: document.getElementById('cancelHabit'),
+        scheduleModal: document.getElementById('scheduleModal'),
+        scheduleModalTitle: document.getElementById('scheduleModalTitle'),
+        scheduleForm: document.getElementById('scheduleForm'),
+        subjectName: document.getElementById('subjectName'),
+        dayOfWeek: document.getElementById('dayOfWeek'),
+        timePeriod: document.getElementById('timePeriod'),
+        startTime: document.getElementById('startTime'),
+        endTime: document.getElementById('endTime'),
+        teacherName: document.getElementById('teacherName'),
+        cancelSchedule: document.getElementById('cancelSchedule')
     };
 }
 
+function bindEvents() {
+    elements.addMainBtn.addEventListener('click', () => {
+        if (currentModule === 'habits') openHabitModal();
+        else openScheduleModal();
+    });
 
-// ============================================
-// 事件监听
-// ============================================
+    elements.switchBtns.forEach((btn) => {
+        btn.addEventListener('click', () => switchModule(btn.dataset.module));
+    });
 
-function initEventListeners() {
-    // 添加按钮
-    document.getElementById('addCourseBtn').addEventListener('click', () => openCourseModal());
-    
-    // 筛选按钮
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.dataset.filter;
-            renderCourses();
-        });
-    });
-    
-    // 分类按钮
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCategory = btn.dataset.category;
-            renderCourses();
-        });
-    });
-    
-    // 课程弹窗
-    document.getElementById('cancelCourse').addEventListener('click', closeCourseModal);
-    elements.courseForm.addEventListener('submit', handleCourseSubmit);
-    
-    // 详情弹窗
-    document.getElementById('closeDetail').addEventListener('click', closeDetailModal);
-    document.getElementById('deleteCourse').addEventListener('click', deleteCurrentCourse);
-    document.getElementById('increaseProgress').addEventListener('click', () => updateProgress(1));
-    document.getElementById('decreaseProgress').addEventListener('click', () => updateProgress(-1));
-    
-    // 状态按钮
-    document.querySelectorAll('.status-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            updateCourseStatus(currentCourseId, btn.dataset.status);
-        });
-    });
-    
-    // 点击背景关闭弹窗
-    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+    elements.habitForm.addEventListener('submit', onHabitSubmit);
+    elements.cancelHabit.addEventListener('click', closeHabitModal);
+    elements.scheduleForm.addEventListener('submit', onScheduleSubmit);
+    elements.cancelSchedule.addEventListener('click', closeScheduleModal);
+
+    document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
         backdrop.addEventListener('click', () => {
-            closeCourseModal();
-            closeDetailModal();
+            closeHabitModal();
+            closeScheduleModal();
         });
     });
 }
 
-// ============================================
-// 数据管理
-// ============================================
+function switchModule(module) {
+    currentModule = module;
+    elements.switchBtns.forEach((btn) => btn.classList.toggle('active', btn.dataset.module === module));
+    elements.habitsPanel.classList.toggle('hidden', module !== 'habits');
+    elements.timetablePanel.classList.toggle('hidden', module !== 'timetable');
+}
 
-function loadCourses() {
+function loadData() {
+    habits = loadJson(HABITS_STORAGE_KEY, DEFAULT_HABITS);
+    scheduleItems = normalizeSchedule(loadJson(SCHEDULE_STORAGE_KEY, DEFAULT_SCHEDULE));
+    saveSchedule();
+}
+
+function loadJson(key, fallback) {
     try {
-        const saved = localStorage.getItem(COURSES_STORAGE_KEY);
-        if (saved) {
-            courses = JSON.parse(saved);
-        } else {
-            // 首次使用，初始化默认课程
-            courses = DEFAULT_COURSES.map(c => ({
-                ...c,
-                createdAt: Date.now()
-            }));
-            saveCourses();
+        const value = localStorage.getItem(key);
+        if (!value) {
+            localStorage.setItem(key, JSON.stringify(fallback));
+            return [...fallback];
         }
-    } catch (e) {
-        console.warn('Failed to load courses:', e);
-        courses = [];
+        return JSON.parse(value);
+    } catch (error) {
+        console.warn(`Failed to parse storage: ${key}`, error);
+        return [...fallback];
     }
 }
 
-function saveCourses() {
-    try {
-        localStorage.setItem(COURSES_STORAGE_KEY, JSON.stringify(courses));
-    } catch (e) {
-        console.warn('Failed to save courses:', e);
-    }
+function normalizeSchedule(items) {
+    if (!Array.isArray(items)) return [];
+    return items.map((item) => ({
+        id: item.id || `s_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        name: item.name || item.title || '未命名课程',
+        dayOfWeek: Number.isInteger(item.dayOfWeek) ? item.dayOfWeek : 1,
+        period: item.period || inferPeriod(item.startTime),
+        startTime: item.startTime || '19:00',
+        endTime: item.endTime || '20:00',
+        goal: item.goal || item.source || '',
+        createdAt: item.createdAt || Date.now()
+    }));
 }
 
-// ============================================
-// 课程操作
-// ============================================
+function inferPeriod(time) {
+    if (!time || typeof time !== 'string') return 'evening';
+    const hour = Number(time.split(':')[0]);
+    if (hour < 12) return 'morning';
+    if (hour < 18) return 'afternoon';
+    return 'evening';
+}
 
-function handleCourseSubmit(e) {
-    e.preventDefault();
-    
-    const name = elements.courseName.value.trim();
-    if (!name) {
-        alert('请输入课程名称');
+function saveHabits() {
+    localStorage.setItem(HABITS_STORAGE_KEY, JSON.stringify(habits));
+}
+
+function saveSchedule() {
+    localStorage.setItem(SCHEDULE_STORAGE_KEY, JSON.stringify(scheduleItems));
+}
+
+function renderAll() {
+    renderHabits();
+    renderScheduleGrid();
+    renderScheduleList();
+    updateHabitStats();
+}
+
+function renderHabits() {
+    const today = getTodayKey();
+    const cards = habits.map((habit) => {
+        const checkedToday = !!(habit.checkins && habit.checkins[today]);
+        const streak = calcStreak(habit);
+        return `
+            <article class="habit-card ${checkedToday ? 'checked' : ''}">
+                <div class="habit-main">
+                    <h3>${escapeHtml(habit.name)}</h3>
+                    <p>目标 ${habit.minutes} 分钟</p>
+                </div>
+                <div class="habit-meta">
+                    <span>连续 ${streak} 天</span>
+                    <button class="danger-btn" data-action="delete-habit" data-id="${habit.id}">删除</button>
+                </div>
+                <button class="check-btn ${checkedToday ? 'done' : ''}" data-action="toggle-checkin" data-id="${habit.id}">
+                    ${checkedToday ? '已打卡' : '今日打卡'}
+                </button>
+            </article>
+        `;
+    }).join('');
+
+    elements.habitList.innerHTML = cards || '';
+    elements.habitEmpty.classList.toggle('hidden', habits.length > 0);
+    if (habits.length === 0) {
+        elements.habitList.appendChild(elements.habitEmpty);
+    }
+
+    elements.habitList.querySelectorAll('[data-action="toggle-checkin"]').forEach((btn) => {
+        btn.addEventListener('click', () => toggleCheckin(btn.dataset.id));
+    });
+    elements.habitList.querySelectorAll('[data-action="delete-habit"]').forEach((btn) => {
+        btn.addEventListener('click', () => deleteHabit(btn.dataset.id));
+    });
+}
+
+function renderScheduleGrid() {
+    const header = ['时间段', ...WEEK_DAYS.map((d) => d.label)];
+    const rows = ['morning', 'afternoon', 'evening'];
+
+    const html = [
+        '<div class="grid-row header-row">',
+        ...header.map((name) => `<div class="grid-cell header-cell">${name}</div>`),
+        '</div>'
+    ];
+
+    rows.forEach((period) => {
+        html.push('<div class="grid-row">');
+        html.push(`<div class="grid-cell period-cell">${PERIODS[period]}</div>`);
+        WEEK_DAYS.forEach((day) => {
+            const items = scheduleItems
+                .filter((it) => it.dayOfWeek === day.key && it.period === period)
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+            html.push(`
+                <div class="grid-cell body-cell">
+                    ${items.map((it) => `
+                        <button class="grid-item" data-id="${it.id}">
+                            <strong>${escapeHtml(it.name)}</strong>
+                            <span>${it.startTime}-${it.endTime}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `);
+        });
+        html.push('</div>');
+    });
+
+    elements.timetableGrid.innerHTML = html.join('');
+    elements.timetableGrid.querySelectorAll('.grid-item').forEach((btn) => {
+        btn.addEventListener('click', () => openScheduleModal(btn.dataset.id));
+    });
+}
+
+function renderScheduleList() {
+    const sorted = [...scheduleItems].sort((a, b) => {
+        if (a.dayOfWeek !== b.dayOfWeek) return a.dayOfWeek - b.dayOfWeek;
+        return a.startTime.localeCompare(b.startTime);
+    });
+
+    if (sorted.length === 0) {
+        elements.timetableList.innerHTML = '';
+        elements.scheduleEmpty.classList.remove('hidden');
+        elements.timetableList.appendChild(elements.scheduleEmpty);
         return;
     }
-    
-    const courseData = {
-        name,
-        source: elements.courseSource.value.trim() || '自学',
-        category: elements.courseCategory.value,
-        totalLessons: parseInt(elements.courseTotalLessons.value) || 10,
-        url: elements.courseUrl.value.trim(),
-        notes: elements.courseNotes.value.trim()
-    };
-    
-    if (currentCourseId) {
-        // 编辑模式
-        const index = courses.findIndex(c => c.id === currentCourseId);
-        if (index !== -1) {
-            courses[index] = { ...courses[index], ...courseData };
-        }
-    } else {
-        // 添加模式
-        const newCourse = {
-            id: 'course_' + Date.now(),
-            ...courseData,
-            completedLessons: 0,
-            status: 'not-started',
-            createdAt: Date.now()
-        };
-        courses.unshift(newCourse);
-        
-        // 添加XP奖励
-        if (window.WebUni && window.WebUni.addXP) {
-            window.WebUni.addXP(10);
-        }
-    }
-    
-    saveCourses();
-    renderCourses();
-    updateStats();
-    closeCourseModal();
-}
 
-function updateCourseStatus(id, status) {
-    const course = courses.find(c => c.id === id);
-    if (course) {
-        const wasCompleted = course.status === 'completed';
-        course.status = status;
-        
-        // 如果标记为完成，自动填满进度
-        if (status === 'completed' && course.completedLessons < course.totalLessons) {
-            course.completedLessons = course.totalLessons;
-            updateDetailProgress(course);
-        }
-        
-        // 完成课程奖励XP
-        if (status === 'completed' && !wasCompleted) {
-            if (window.WebUni && window.WebUni.addXP) {
-                window.WebUni.addXP(50);
-            }
-            showCompletionToast('🎉 恭喜完成课程！+50XP');
-        }
-        
-        saveCourses();
-        renderCourses();
-        updateStats();
-    }
-}
-
-function updateProgress(delta) {
-    const course = courses.find(c => c.id === currentCourseId);
-    if (!course) return;
-    
-    const newValue = Math.max(0, Math.min(course.totalLessons, course.completedLessons + delta));
-    if (newValue === course.completedLessons) return;
-    
-    course.completedLessons = newValue;
-    
-    // 自动更新状态
-    if (newValue === 0) {
-        course.status = 'not-started';
-    } else if (newValue === course.totalLessons) {
-        if (course.status !== 'completed') {
-            course.status = 'completed';
-            if (window.WebUni && window.WebUni.addXP) {
-                window.WebUni.addXP(50);
-            }
-            showCompletionToast('🎉 恭喜完成课程！+50XP');
-        }
-    } else {
-        course.status = 'learning';
-    }
-    
-    // 每完成一节课奖励XP
-    if (delta > 0) {
-        if (window.WebUni && window.WebUni.addXP) {
-            window.WebUni.addXP(5);
-        }
-    }
-    
-    updateDetailProgress(course);
-    updateStatusButtons(course.status);
-    saveCourses();
-    renderCourses();
-    updateStats();
-}
-
-function updateDetailProgress(course) {
-    const percent = (course.completedLessons / course.totalLessons) * 100;
-    elements.progressText.textContent = `${course.completedLessons}/${course.totalLessons}`;
-    elements.progressFill.style.width = `${percent}%`;
-    elements.progressCurrent.textContent = course.completedLessons;
-}
-
-function updateStatusButtons(status) {
-    document.querySelectorAll('.status-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.status === status);
-    });
-}
-
-function deleteCurrentCourse() {
-    if (!currentCourseId) return;
-    
-    if (confirm('确定要删除这门课程吗？')) {
-        courses = courses.filter(c => c.id !== currentCourseId);
-        saveCourses();
-        renderCourses();
-        updateStats();
-        closeDetailModal();
-    }
-}
-
-// ============================================
-// 渲染
-// ============================================
-
-function renderCourses() {
-    let filtered = courses;
-    
-    // 状态筛选
-    if (currentFilter !== 'all') {
-        filtered = filtered.filter(c => c.status === currentFilter);
-    }
-    
-    // 分类筛选
-    if (currentCategory !== 'all') {
-        filtered = filtered.filter(c => c.category === currentCategory);
-    }
-    
-    // 显示/隐藏空状态
-    elements.emptyState.classList.toggle('hidden', filtered.length > 0);
-    
-    // 清空现有卡片
-    const existingCards = elements.coursesList.querySelectorAll('.course-card');
-    existingCards.forEach(card => card.remove());
-    
-    // 渲染课程卡片
-    filtered.forEach(course => {
-        const card = createCourseCard(course);
-        elements.coursesList.appendChild(card);
-    });
-}
-
-function createCourseCard(course) {
-    const card = document.createElement('div');
-    card.className = `course-card ${course.status}`;
-    card.dataset.id = course.id;
-    
-    const category = CATEGORIES[course.category] || CATEGORIES.other;
-    const status = STATUS_CONFIG[course.status];
-    const percent = Math.round((course.completedLessons / course.totalLessons) * 100);
-    
-    card.innerHTML = `
-        <div class="course-card-header" style="border-left-color: ${category.color}">
-            <span class="course-category-tag">${category.icon} ${category.name}</span>
-            <span class="course-status-tag">${status.icon}</span>
-        </div>
-        <div class="course-card-body">
-            <h3 class="course-name">${escapeHtml(course.name)}</h3>
-            <p class="course-source">${escapeHtml(course.source)}</p>
-            <div class="course-progress">
-                <div class="progress-bar-mini">
-                    <div class="progress-fill-mini" style="width: ${percent}%"></div>
-                </div>
-                <span class="progress-label">${course.completedLessons}/${course.totalLessons} (${percent}%)</span>
+    elements.scheduleEmpty.classList.add('hidden');
+    elements.timetableList.innerHTML = sorted.map((it) => `
+        <article class="schedule-card">
+            <div>
+                <h3>${escapeHtml(it.name)}</h3>
+                <p>${WEEK_DAYS.find((d) => d.key === it.dayOfWeek)?.label || '未知'} · ${PERIODS[it.period]} · ${it.startTime}-${it.endTime}</p>
+                ${it.goal ? `<small>${escapeHtml(it.goal)}</small>` : ''}
             </div>
-        </div>
-        <div class="course-card-footer">
-            <span class="course-status-text">${status.icon} ${status.name}</span>
-            ${course.url ? '<span class="has-link">🔗</span>' : ''}
-        </div>
-    `;
-    
-    card.addEventListener('click', () => openDetailModal(course.id));
-    
-    return card;
-}
-
-function renderResources() {
-    elements.resourcesGrid.innerHTML = DEFAULT_RESOURCES.map(res => `
-        <a href="${res.url}" target="_blank" class="resource-card">
-            <span class="resource-icon">${res.icon}</span>
-            <div class="resource-info">
-                <span class="resource-name">${res.name}</span>
-                <span class="resource-desc">${res.desc}</span>
+            <div class="schedule-actions">
+                <button class="action-btn" data-action="edit" data-id="${it.id}">编辑</button>
+                <button class="action-btn danger" data-action="delete" data-id="${it.id}">删除</button>
             </div>
-            <span class="resource-arrow">→</span>
-        </a>
+        </article>
     `).join('');
+
+    elements.timetableList.querySelectorAll('[data-action="edit"]').forEach((btn) => {
+        btn.addEventListener('click', () => openScheduleModal(btn.dataset.id));
+    });
+    elements.timetableList.querySelectorAll('[data-action="delete"]').forEach((btn) => {
+        btn.addEventListener('click', () => deleteScheduleItem(btn.dataset.id));
+    });
 }
 
-function updateStats() {
-    elements.totalCourses.textContent = courses.length;
-    elements.learningCount.textContent = courses.filter(c => c.status === 'learning').length;
-    elements.completedCount.textContent = courses.filter(c => c.status === 'completed').length;
+function updateHabitStats() {
+    const today = getTodayKey();
+    const done = habits.filter((h) => h.checkins && h.checkins[today]).length;
+    const best = habits.reduce((max, h) => Math.max(max, calcStreak(h)), 0);
+    elements.todayDone.textContent = String(done);
+    elements.habitCount.textContent = String(habits.length);
+    elements.bestStreak.textContent = String(best);
 }
 
-// ============================================
-// 弹窗控制
-// ============================================
+function onHabitSubmit(event) {
+    event.preventDefault();
+    const name = elements.habitName.value.trim();
+    const minutes = Math.max(1, parseInt(elements.habitMinutes.value, 10) || 10);
+    if (!name) return;
 
-function openCourseModal(courseId = null) {
-    currentCourseId = courseId;
-    const modalTitle = document.getElementById('modalTitle');
-    
-    if (courseId) {
-        const course = courses.find(c => c.id === courseId);
-        if (course) {
-            modalTitle.textContent = '📝 编辑课程';
-            elements.courseName.value = course.name;
-            elements.courseSource.value = course.source;
-            elements.courseCategory.value = course.category;
-            elements.courseTotalLessons.value = course.totalLessons;
-            elements.courseUrl.value = course.url || '';
-            elements.courseNotes.value = course.notes || '';
+    habits.unshift({
+        id: `habit_${Date.now()}`,
+        name,
+        minutes,
+        checkins: {},
+        createdAt: Date.now()
+    });
+
+    saveHabits();
+    renderHabits();
+    updateHabitStats();
+    closeHabitModal();
+
+    if (window.WebUni && window.WebUni.addXP) {
+        window.WebUni.addXP(5);
+    }
+}
+
+function onScheduleSubmit(event) {
+    event.preventDefault();
+
+    const payload = {
+        name: elements.subjectName.value.trim(),
+        dayOfWeek: Number(elements.dayOfWeek.value),
+        period: elements.timePeriod.value,
+        startTime: elements.startTime.value,
+        endTime: elements.endTime.value,
+        goal: elements.teacherName.value.trim()
+    };
+
+    if (!payload.name) return;
+    if (payload.endTime <= payload.startTime) {
+        alert('结束时间需要晚于开始时间');
+        return;
+    }
+
+    if (editingScheduleId) {
+        scheduleItems = scheduleItems.map((item) => (
+            item.id === editingScheduleId ? { ...item, ...payload } : item
+        ));
+    } else {
+        scheduleItems.push({
+            id: `schedule_${Date.now()}`,
+            ...payload,
+            createdAt: Date.now()
+        });
+    }
+
+    saveSchedule();
+    renderScheduleGrid();
+    renderScheduleList();
+    closeScheduleModal();
+}
+
+function toggleCheckin(habitId) {
+    const today = getTodayKey();
+    const habit = habits.find((h) => h.id === habitId);
+    if (!habit) return;
+
+    if (!habit.checkins) habit.checkins = {};
+    const currentlyChecked = !!habit.checkins[today];
+    habit.checkins[today] = !currentlyChecked;
+    if (!habit.checkins[today]) delete habit.checkins[today];
+
+    saveHabits();
+    renderHabits();
+    updateHabitStats();
+
+    if (!currentlyChecked && window.WebUni && window.WebUni.addXP) {
+        window.WebUni.addXP(10);
+    }
+}
+
+function deleteHabit(habitId) {
+    if (!confirm('确定删除这个习惯吗？')) return;
+    habits = habits.filter((h) => h.id !== habitId);
+    saveHabits();
+    renderHabits();
+    updateHabitStats();
+}
+
+function deleteScheduleItem(id) {
+    if (!confirm('确定删除这个课表安排吗？')) return;
+    scheduleItems = scheduleItems.filter((it) => it.id !== id);
+    saveSchedule();
+    renderScheduleGrid();
+    renderScheduleList();
+}
+
+function openHabitModal() {
+    elements.habitForm.reset();
+    elements.habitMinutes.value = '10';
+    elements.habitModal.classList.remove('hidden');
+}
+
+function closeHabitModal() {
+    elements.habitModal.classList.add('hidden');
+}
+
+function openScheduleModal(scheduleId = null) {
+    editingScheduleId = scheduleId;
+    elements.scheduleForm.reset();
+    elements.dayOfWeek.value = '1';
+    elements.timePeriod.value = 'evening';
+    elements.startTime.value = '19:00';
+    elements.endTime.value = '20:00';
+    elements.teacherName.value = '';
+
+    if (scheduleId) {
+        const item = scheduleItems.find((it) => it.id === scheduleId);
+        if (item) {
+            elements.scheduleModalTitle.textContent = '编辑课表安排';
+            elements.subjectName.value = item.name;
+            elements.dayOfWeek.value = String(item.dayOfWeek);
+            elements.timePeriod.value = item.period;
+            elements.startTime.value = item.startTime;
+            elements.endTime.value = item.endTime;
+            elements.teacherName.value = item.goal || '';
         }
     } else {
-        modalTitle.textContent = '📚 添加课程';
-        elements.courseForm.reset();
-        elements.courseTotalLessons.value = 10;
+        elements.scheduleModalTitle.textContent = '新增课表安排';
     }
-    
-    elements.courseModal.classList.remove('hidden');
+
+    elements.scheduleModal.classList.remove('hidden');
 }
 
-function closeCourseModal() {
-    elements.courseModal.classList.add('hidden');
-    currentCourseId = null;
-    elements.courseForm.reset();
+function closeScheduleModal() {
+    elements.scheduleModal.classList.add('hidden');
+    editingScheduleId = null;
 }
 
-function openDetailModal(courseId) {
-    const course = courses.find(c => c.id === courseId);
-    if (!course) return;
-    
-    currentCourseId = courseId;
-    const category = CATEGORIES[course.category] || CATEGORIES.other;
-    
-    // 填充详情
-    elements.detailHeader.style.background = `linear-gradient(135deg, ${category.color}, ${adjustColor(category.color, -30)})`;
-    elements.detailCategory.textContent = `${category.icon} ${category.name}`;
-    elements.detailTitle.textContent = course.name;
-    elements.detailSource.textContent = course.source;
-    
-    // 进度
-    updateDetailProgress(course);
-    
-    // 状态按钮
-    updateStatusButtons(course.status);
-    
-    // 链接
-    if (course.url) {
-        elements.detailLink.href = course.url;
-        elements.detailLinkSection.classList.remove('hidden');
-    } else {
-        elements.detailLinkSection.classList.add('hidden');
+function calcStreak(habit) {
+    if (!habit.checkins) return 0;
+    const set = new Set(Object.keys(habit.checkins).filter((k) => habit.checkins[k]));
+    if (set.size === 0) return 0;
+
+    let streak = 0;
+    const date = new Date();
+    while (true) {
+        const key = date.toISOString().slice(0, 10);
+        if (set.has(key)) {
+            streak += 1;
+            date.setDate(date.getDate() - 1);
+        } else {
+            break;
+        }
     }
-    
-    // 备注
-    if (course.notes) {
-        elements.detailNotes.textContent = course.notes;
-        elements.detailNotesSection.classList.remove('hidden');
-    } else {
-        elements.detailNotesSection.classList.add('hidden');
-    }
-    
-    elements.detailModal.classList.remove('hidden');
+    return streak;
 }
 
-function closeDetailModal() {
-    elements.detailModal.classList.add('hidden');
-    currentCourseId = null;
+function getTodayKey() {
+    return new Date().toISOString().slice(0, 10);
 }
-
-// ============================================
-// 工具函数
-// ============================================
 
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -520,34 +469,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function adjustColor(hex, amount) {
-    let color = hex.replace('#', '');
-    let num = parseInt(color, 16);
-    let r = Math.min(255, Math.max(0, (num >> 16) + amount));
-    let g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
-    let b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
-    return '#' + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
-}
-
-function showCompletionToast(message) {
-    const toast = document.createElement('div');
-    toast.className = 'completion-toast';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 2500);
-}
-
-// ============================================
-// 导出API
-// ============================================
-
 window.Course = {
-    getCourses: () => courses,
-    saveCourses,
-    updateProgress
+    getCourses: () => scheduleItems,
+    saveCourses: saveSchedule
 };

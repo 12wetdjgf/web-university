@@ -7,6 +7,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     initUserStats();
     initNavAnimations();
+    initCloudSyncControls();
 });
 
 /**
@@ -177,6 +178,68 @@ function initNavAnimations() {
                 module.style.transform = 'scale(1)';
             }
         }, 300 + index * 100);
+    });
+}
+
+function initCloudSyncControls() {
+    const syncBtn = document.getElementById('syncToCloudBtn');
+    const showCodeBtn = document.getElementById('showDeviceCodeBtn');
+    const restoreBtn = document.getElementById('restoreByCodeBtn');
+    const codeInput = document.getElementById('restoreDeviceCodeInput');
+    const statusEl = document.getElementById('cloudSyncStatus');
+
+    if (!syncBtn || !showCodeBtn || !restoreBtn || !codeInput || !statusEl) return;
+
+    const setStatus = (msg) => {
+        statusEl.textContent = msg;
+    };
+
+    syncBtn.addEventListener('click', async () => {
+        if (!window.CloudStorage) {
+            setStatus('未检测到云同步服务');
+            return;
+        }
+        setStatus('正在同步到云端...');
+        try {
+            await window.CloudStorage.syncAllData();
+            setStatus('同步完成');
+        } catch (error) {
+            setStatus(`同步失败: ${error.message}`);
+        }
+    });
+
+    showCodeBtn.addEventListener('click', () => {
+        if (!window.CloudStorage) {
+            setStatus('未检测到云同步服务');
+            return;
+        }
+        const code = window.CloudStorage.getDeviceCode();
+        codeInput.value = code;
+        setStatus(`设备码: ${code}`);
+    });
+
+    restoreBtn.addEventListener('click', async () => {
+        if (!window.CloudStorage) {
+            setStatus('未检测到云同步服务');
+            return;
+        }
+        const code = codeInput.value.trim();
+        if (!code) {
+            setStatus('请先输入设备码');
+            return;
+        }
+        setStatus('正在从云端恢复...');
+        try {
+            const ok = await window.CloudStorage.restoreByDeviceCode(code);
+            if (!ok) {
+                setStatus('恢复失败');
+                return;
+            }
+            setStatus('恢复完成，页面即将刷新');
+            setTimeout(() => location.reload(), 800);
+        } catch (error) {
+            setStatus(`恢复失败: ${error.message}`);
+        }
     });
 }
 

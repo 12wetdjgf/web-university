@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,16 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
 </head>
-
 <body>
     <main class="home">
-        <!-- 中心欢迎区域 -->
         <div class="home-center">
-            <span class="welcome-badge">✨ 欢迎回来</span>
+            <span class="welcome-badge">欢迎回来</span>
             <h1 class="home-title">Web<span class="gradient-text">大学</span></h1>
             <p class="home-subtitle">你的个人学习平台</p>
 
-            <!-- 用户状态卡片 -->
             <div class="user-stats-card">
                 <div class="stat-item-mini">
                     <span class="stat-icon">🎓</span>
@@ -42,15 +38,14 @@
             </div>
         </div>
 
-        <!-- 环形导航 -->
         <nav class="circular-nav">
             <a href="schedule.html" class="nav-module" data-position="top">
-                <span class="module-icon">📅</span>
+                <span class="module-icon">📌</span>
                 <span class="module-name">日程</span>
                 <span class="module-desc">任务管理</span>
             </a>
             <a href="studyroom.html" class="nav-module" data-position="top-right">
-                <span class="module-icon">🧘</span>
+                <span class="module-icon">⏱️</span>
                 <span class="module-name">自习室</span>
                 <span class="module-desc">番茄钟</span>
             </a>
@@ -60,7 +55,7 @@
                 <span class="module-desc">我的图书</span>
             </a>
             <a href="course.html" class="nav-module" data-position="bottom">
-                <span class="module-icon">🎓</span>
+                <span class="module-icon">🎯</span>
                 <span class="module-name">课程</span>
                 <span class="module-desc">学习资源</span>
             </a>
@@ -70,7 +65,7 @@
                 <span class="module-desc">知识管理</span>
             </a>
             <a href="projects.html" class="nav-module" data-position="top-left">
-                <span class="module-icon">🚀</span>
+                <span class="module-icon">🧪</span>
                 <span class="module-name">项目</span>
                 <span class="module-desc">代码管理</span>
             </a>
@@ -87,8 +82,14 @@
         </nav>
     </main>
 
-    <!-- 页脚 -->
     <footer class="home-footer">
+        <div class="cloud-sync-panel">
+            <button id="syncToCloudBtn" class="cloud-sync-btn">同步到云端</button>
+            <button id="showDeviceCodeBtn" class="cloud-sync-btn">显示设备码</button>
+            <input id="restoreDeviceCodeInput" class="cloud-sync-input" type="text" placeholder="输入设备码恢复数据">
+            <button id="restoreByCodeBtn" class="cloud-sync-btn">按设备码恢复</button>
+            <span id="cloudSyncStatus" class="cloud-sync-status"></span>
+        </div>
         <p>Web大学 · 让学习成为习惯</p>
     </footer>
 
@@ -96,5 +97,4 @@
     <script src="main.js"></script>
     <script src="gamification.js"></script>
 </body>
-
 </html>
